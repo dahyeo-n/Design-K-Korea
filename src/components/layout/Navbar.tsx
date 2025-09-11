@@ -22,15 +22,17 @@ const Navbar = (): JSX.Element => {
     <header
       className="sticky top-0 z-10 mx-auto
       px-5 sm:px-8 md:px-16 lg:px-32 xl:px-60 py-3 h-14
-      flex items-center justify-between bg-white">
+      flex items-center justify-between bg-white shadow-md">
       <div className="flex items-center md:space-x-12 lg:space-x-14">
-        <Image
-          src="/design-k-korea-logo.png"
-          alt="design-k-korea logo"
-          width={123}
-          height={36}
-          priority
-        />
+        <Link href="/">
+          <Image
+            src="/design-k-korea-logo.png"
+            alt="design-k-korea logo"
+            width={123}
+            height={36}
+            priority
+          />
+        </Link>
         <div className="hidden md:flex items-center space-x-8 lg:space-x-14">
           {navigationPages.map(navPage => (
             <Link
