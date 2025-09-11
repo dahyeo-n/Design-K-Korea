@@ -40,7 +40,7 @@ const dummyData: QnaItem[] = [
     status: '답변완료',
     title: '이런 장소도 인테리어 가능할까요?',
     content: '답변이 등록되었습니다. 답변을 확인해 주세요.',
-    author: '김예매',
+    author: '김애매',
     date: '2025.08.08',
   },
 ];
