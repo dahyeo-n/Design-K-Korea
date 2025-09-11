@@ -47,12 +47,12 @@ const Footer = () => {
 
               <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm sm:text-base font-bold text-gray-600">
                 <Link
-                  href="#"
+                  href="/terms-of-service"
                   className="hover:text-gray-900 transition-colors">
                   이용약관
                 </Link>
                 <Link
-                  href="#"
+                  href="/privacy-policy"
                   className="hover:text-gray-900 transition-colors">
                   개인정보처리방침
                 </Link>
