@@ -3,7 +3,7 @@
 import { type JSX } from 'react';
 import Image from 'next/image';
 import { CircleArrowDown, Home, Building2, Palette } from 'lucide-react';
-import SpaceCard from '@/components/SpaceCard';
+import ImageCard from '@/components/ImageCard';
 
 const Main = (): JSX.Element => {
   const spaces = [
@@ -150,7 +150,7 @@ const Main = (): JSX.Element => {
                     animationDelay: `${index * 150}ms`,
                     animation: 'fadeInUp 0.8s ease-out forwards',
                   }}>
-                  <SpaceCard {...space} />
+                  <ImageCard {...space} />
                 </div>
               ))}
             </div>

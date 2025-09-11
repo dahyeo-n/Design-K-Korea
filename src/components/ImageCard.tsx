@@ -2,17 +2,17 @@ import { type ReactNode } from 'react';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
-type SpaceCardProps = {
+type ImageCardProps = {
   title: string;
   subtitle: string;
   imageSrc: string;
   imageAlt: string;
-  icon: ReactNode;
-  gradientFrom: string;
-  gradientTo: string;
+  icon?: ReactNode;
+  gradientFrom?: string;
+  gradientTo?: string;
 };
 
-const SpaceCard = ({
+const ImageCard = ({
   title,
   subtitle,
   imageSrc,
@@ -20,7 +20,7 @@ const SpaceCard = ({
   icon,
   gradientFrom,
   gradientTo,
-}: SpaceCardProps) => {
+}: ImageCardProps) => {
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
       <div
@@ -56,4 +56,4 @@ const SpaceCard = ({
   );
 };
 
-export default SpaceCard;
+export default ImageCard;
