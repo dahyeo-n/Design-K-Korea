@@ -5,21 +5,25 @@ import { ArrowRight } from 'lucide-react';
 type ImageCardProps = {
   title: string;
   subtitle: string;
+  description?: string;
   imageSrc: string;
   imageAlt: string;
   icon?: ReactNode;
   gradientFrom?: string;
   gradientTo?: string;
+  lookCloser?: boolean;
 };
 
 const ImageCard = ({
   title,
   subtitle,
+  description,
   imageSrc,
   imageAlt,
   icon,
   gradientFrom,
   gradientTo,
+  lookCloser,
 }: ImageCardProps) => {
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
@@ -43,15 +47,17 @@ const ImageCard = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
 
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
-          {title}
-        </h3>
-        <div className="flex items-center text-blue-600 font-medium transition-transform duration-200">
-          자세히 보기
-          <ArrowRight className="w-4 h-4 ml-2" />
+      {lookCloser && (
+        <div className="p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+            {title}
+          </h3>
+          <div className="flex items-center text-blue-600 font-medium transition-transform duration-200">
+            자세히 보기
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
