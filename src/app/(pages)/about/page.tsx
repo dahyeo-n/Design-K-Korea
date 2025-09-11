@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 import ImageCard from '@/components/ImageCard';
+import Link from 'next/link';
 
 const About = () => {
   const values = [
@@ -150,29 +151,29 @@ const About = () => {
               priority
             />
             <p>
-              <span className="font-semibold">상호</span> : 디자인케이 코리아
-              주식회사
+              <span className=" font-semibold mr-2">상호</span>
+              디자인케이코리아 주식회사
             </p>
             <p>
-              <span className="font-semibold">주소</span> : 경기도 평택시
-              산단로184번길 26, 1304호 (모곡동, 평택스마트타워)
+              <span className="font-semibold mr-2">주소</span>경기도 평택시
+              산단로16번길 26, 1304호 (모곡동, 엠에스원타워)
             </p>
             <p>
-              <span className="font-semibold">대표</span> : 김경용
+              <span className="font-semibold mr-2">대표</span>김길용
             </p>
             <p>
-              <span className="font-semibold">연락처</span> : 010-3323-1236
+              <span className="font-semibold mr-2">연락처</span>010-3323-1236
             </p>
             <p>
-              <span className="font-semibold">팩스</span> : 0504-291-1236
+              <span className="font-semibold mr-2">팩스</span>0504-291-1236
             </p>
             <p>
-              <span className="font-semibold">E-mail</span> :{' '}
-              <a
-                href="mailto:kkyong98@naver.com"
+              <span className="font-semibold mr-2">E-mail</span>
+              <Link
+                href="mailto:kkyong89@naver.com"
                 className="text-blue-600 underline hover:text-blue-800">
-                kkyong98@naver.com
-              </a>
+                kkyong89@naver.com
+              </Link>
             </p>
           </div>
         </div>
