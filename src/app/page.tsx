@@ -2,6 +2,7 @@
 
 import { type JSX } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { CircleArrowDown, Home, Building2, Palette } from 'lucide-react';
 
 import ImageCard from '@/components/ImageCard';
@@ -135,11 +136,13 @@ const Main = (): JSX.Element => {
                 매일 머무는 집과 회사, 그곳에서의 시간이 곧 행복이 되도록.
               </p>
 
-              <button
-                className="text-sm md:text-lg inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-6 py-3 rounded-md shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                aria-label="문의하러 가기 button">
-                문의하러 가기
-              </button>
+              <Link href="/qna">
+                <button
+                  className="text-sm md:text-lg inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-6 py-3 rounded-md shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  aria-label="문의하러 가기 button">
+                  문의하러 가기
+                </button>
+              </Link>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
