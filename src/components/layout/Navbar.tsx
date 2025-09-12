@@ -169,7 +169,7 @@ const Navbar = (): JSX.Element => {
                     <Link
                       href={navPage.href}
                       onClick={closeMobileMenu}
-                      className="text-[#465A6E] font-bold text-lg hover:text-gray-800 transition-colors flex-1">
+                      className="text-[#465A6E] font-bold text-base hover:text-gray-800 transition-colors flex-1">
                       {navPage.text}
                     </Link>
                     {navPage.hasDropdown && (
@@ -210,7 +210,7 @@ const Navbar = (): JSX.Element => {
                   setIsModalOpen(true);
                   closeMobileMenu();
                 }}
-                className="w-full text-white font-bold bg-[#465A6E] py-3 px-4 rounded-md hover:bg-[#3a4a5c] transition-colors">
+                className="w-full text-white text-sm font-bold bg-[#465A6E] py-3 px-4 rounded-md hover:bg-[#3a4a5c] transition-colors">
                 의뢰하기
               </button>
             </div>
