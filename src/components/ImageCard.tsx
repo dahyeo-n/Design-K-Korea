@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 
 type ImageCardProps = {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   description?: string;
   imageSrc: string;
   imageAlt: string;
@@ -27,13 +27,15 @@ const ImageCard = ({
 }: ImageCardProps) => {
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-      <div
-        className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-full bg-gradient-to-r ${gradientFrom} ${gradientTo} text-white text-sm font-medium shadow-md`}>
-        <div className="flex items-center gap-2">
-          {icon}
-          {subtitle}
+      {subtitle && (
+        <div
+          className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-full bg-gradient-to-r ${gradientFrom} ${gradientTo} text-white text-sm font-medium shadow-md`}>
+          <div className="flex items-center gap-2">
+            {icon}
+            {subtitle}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="relative h-64 sm:h-72 overflow-hidden">
         <Image
