@@ -1,6 +1,6 @@
 'use client';
 
-import { Lock } from 'lucide-react';
+import { Lock, X } from 'lucide-react';
 import { useState } from 'react';
 
 type SecretPasswordModalProps = {
@@ -30,9 +30,9 @@ const SecretPasswordModal = ({
       <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl relative">
         <button
           onClick={onClose}
-          aria-label="닫기"
+          aria-label="modal close button"
           className="absolute top-4 right-5 text-gray-400 hover:text-gray-600 text-xl md:text-2xl transition-colors">
-          ✕
+          <X className="w-6 h-6" />
         </button>
 
         <div className="p-8 pt-18 pb-9 text-center">

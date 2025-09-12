@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { useState } from 'react';
+import { X } from 'lucide-react';
 
 type QnaFormModalProps = {
   onClose: () => void;
@@ -34,9 +35,9 @@ const QnaFormModal = ({ onClose }: QnaFormModalProps) => {
 
             <button
               onClick={onClose}
-              aria-label="close button"
+              aria-label="modal close button"
               className="absolute top-4 right-4 text-white text-2xl hover:text-gray-200 transition-colors">
-              ✕
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
