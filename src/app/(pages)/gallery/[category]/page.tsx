@@ -1,223 +1,307 @@
 'use client';
 
-import { useState, type JSX } from 'react';
-import { ChevronDown } from 'lucide-react';
-import ImageCard from '@/components/ImageCard';
+import { useState, useEffect, type JSX } from 'react';
+import { useParams } from 'next/navigation';
 
-const galleryImages = [
-  {
-    id: 1,
-    src: '/office-image-wall-1.jpg',
-    alt: '인테리어 디자인 1',
-    category: 'office',
-  },
-  {
-    id: 2,
-    src: '/office-image-wall-2.jpg',
-    alt: '인테리어 디자인 2',
-    category: 'office',
-  },
-  {
-    id: 3,
-    src: '/office-image-wall-3.jpg',
-    alt: '인테리어 디자인 3',
-    category: 'office',
-  },
-  {
-    id: 4,
-    src: '/office-image-wall-4.jpg',
-    alt: '인테리어 디자인 4',
-    category: 'office',
-  },
-  {
-    id: 5,
-    src: '/office-image-wall-5.jpg',
-    alt: '인테리어 디자인 5',
-    category: 'office',
-  },
-  {
-    id: 6,
-    src: '/office-image-wall-6.jpg',
-    alt: '인테리어 디자인 6',
-    category: 'office',
-  },
-  {
-    id: 7,
-    src: '/office-image-wall-7.jpg',
-    alt: '인테리어 디자인 7',
-    category: 'office',
-  },
-  {
-    id: 8,
-    src: '/office-image-wall-8.jpg',
-    alt: '인테리어 디자인 8',
-    category: 'office',
-  },
-  {
-    id: 9,
-    src: '/office-image-wall-9.jpg',
-    alt: '인테리어 디자인 9',
-    category: 'office',
-  },
-  {
-    id: 10,
-    src: '/office-image-wall-10.jpg',
-    alt: '인테리어 디자인 10',
-    category: 'office',
-  },
-  {
-    id: 11,
-    src: '/office-image-wall-11.jpg',
-    alt: '인테리어 디자인 11',
-    category: 'office',
-  },
-  {
-    id: 12,
-    src: '/office-image-wall-12.jpg',
-    alt: '인테리어 디자인 12',
-    category: 'office',
-  },
-];
+import ImageCard from '@/components/ImageCard';
+import { supabase } from '@/lib/supabaseClient';
+
+const categoryNames: Record<string, string> = {
+  // 메인 카테고리
+  office: '오피스',
+  residence: '주거 공간',
+  commercial: '상업 공간',
+  exhibition: '전시 공간',
+  proposal: '공간 제안',
+  exterior: '건축 외관',
+  'space-media-vr': '공간 미디어 (VR)',
+
+  // 오피스 하위 카테고리
+  isometric: '아이소메트릭 공간',
+  'image-wall': '이미지 월',
+  facade: '파사드',
+  'ceo-conference': '임원 공간',
+
+  // 아이소메트릭 하위 카테고리
+  '1-square': '1칸',
+  '2-square': '2칸',
+  '3-square': '3칸',
+  '4-square': '4칸',
+  '5-square': '5칸',
+  'duplex-structure': '복층 구조',
+
+  // 공간 제안 하위 카테고리
+  'amnare-korea': 'Amnare Korea',
+  'life-wave-korea': 'Life Wave Korea',
+  'thermo-fisher': 'Thermo Fisher',
+  'xendurance-korea': 'Xendurance Korea',
+};
+
+// URL 경로를 Supabase Storage 경로로 매핑
+const getStoragePath = (categoryId: string): string => {
+  // 아이소메트릭 하위 카테고리들
+  if (
+    [
+      '1-square',
+      '2-square',
+      '3-square',
+      '4-square',
+      '5-square',
+      'duplex-structure',
+    ].includes(categoryId)
+  ) {
+    return `office/isometric/${categoryId}`;
+  }
+
+  // 오피스 하위 카테고리들
+  if (
+    ['isometric', 'image-wall', 'facade', 'ceo-conference'].includes(categoryId)
+  ) {
+    return `office/${categoryId}`;
+  }
+
+  // 공간 제안 하위 카테고리들
+  if (
+    [
+      'amnare-korea',
+      'life-wave-korea',
+      'thermo-fisher',
+      'xendurance-korea',
+    ].includes(categoryId)
+  ) {
+    return `proposal/${categoryId}`;
+  }
+
+  // 메인 카테고리들
+  return categoryId;
+};
 
 const GalleryCategory = (): JSX.Element => {
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const params = useParams();
+  const categoryId = params.category as string;
 
-  const categories = {
-    office: {
-      label: '오피스',
-      subcategories: [
-        '주거 공간',
-        '상업 공간',
-        '전시 공간',
-        '공간 계획',
-        '건축 외관',
-        '공간 미디어',
-      ],
-    },
-    residential: {
-      label: '아이스테틱 공간',
-      subcategories: [
-        '아이스테틱 1칸',
-        '아이스테틱 2칸',
-        '아이스테틱 3칸',
-        '아이스테틱 4칸',
-        '아이스테틱 5칸',
-        '복층 구조',
-      ],
-    },
-    brands: {
-      label: '브랜드',
-      subcategories: [
-        'Life Wave Korea',
-        'Ammare Korea',
-        'Thermo Fisher',
-        'Xendurance Korea',
-      ],
-    },
-    media: {
-      label: '공간 미디어',
-      subcategories: ['VR', '영상'],
-    },
-  };
+  const [images, setImages] = useState<
+    {
+      src: string;
+      alt: string;
+      category: string;
+      subcategory?: string | null;
+    }[]
+  >([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [currentCategory, setCurrentCategory] = useState<string>('');
 
-  const toggleDropdown = (dropdown: string) => {
-    setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
-  };
+  useEffect(() => {
+    const fetchImages = async () => {
+      if (!categoryId || !categoryNames[categoryId]) return;
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    setActiveDropdown(null);
-  };
+      setLoading(true);
+      const storagePath = getStoragePath(categoryId);
+      setCurrentCategory(categoryNames[categoryId] || categoryId);
 
-  const filteredImages =
-    selectedCategory === 'all'
-      ? galleryImages
-      : galleryImages.filter(image => image.category === selectedCategory);
+      try {
+        // 특정 경로에서 이미지 가져오기
+        const { data: mainData } = await supabase.storage
+          .from('gallery')
+          .list(storagePath, { limit: 1000 });
+
+        let allImages: Array<{
+          name: string;
+          path: string;
+          subcategory: string | null;
+        }> = [];
+
+        if (mainData) {
+          // 메인 폴더의 직접 이미지들
+          const mainImages = mainData
+            .filter(item => item.name.match(/\.(jpg|jpeg|png|avif)$/i))
+            .map(item => ({
+              name: item.name,
+              path: `${storagePath}/${item.name}`,
+              subcategory: null,
+            }));
+
+          allImages = [...mainImages];
+
+          // 아이소메트릭 하위 카테고리들 (1-square, 2-square 등)은 최종 카테고리이므로 하위 폴더 확인 불필요
+          const isIsometricSubcategory = [
+            '1-square',
+            '2-square',
+            '3-square',
+            '4-square',
+            '5-square',
+            'duplex-structure',
+          ].includes(categoryId);
+
+          // 하위 폴더들 확인 (메인 카테고리이거나 isometric인 경우, 단 아이소메트릭 하위 카테고리 제외)
+          if (
+            (storagePath === categoryId || categoryId === 'isometric') &&
+            !isIsometricSubcategory
+          ) {
+            const subfolders = mainData.filter(
+              item => !item.name.includes('.'),
+            );
+
+            for (const subfolder of subfolders) {
+              // office의 경우 isometric 폴더 안의 하위 폴더들까지 확인
+              if (categoryId === 'office' && subfolder.name === 'isometric') {
+                const { data: isometricData } = await supabase.storage
+                  .from('gallery')
+                  .list(`${storagePath}/isometric`, { limit: 1000 });
+
+                if (isometricData) {
+                  const isometricSubfolders = isometricData.filter(
+                    item => !item.name.includes('.'),
+                  );
+
+                  for (const isometricSubfolder of isometricSubfolders) {
+                    const { data: deepSubData } = await supabase.storage
+                      .from('gallery')
+                      .list(
+                        `${storagePath}/isometric/${isometricSubfolder.name}`,
+                        { limit: 1000 },
+                      );
+
+                    if (deepSubData) {
+                      const deepSubImages = deepSubData
+                        .filter(item =>
+                          item.name.match(/\.(jpg|jpeg|png|avif)$/i),
+                        )
+                        .map(item => ({
+                          name: item.name,
+                          path: `${storagePath}/isometric/${isometricSubfolder.name}/${item.name}`,
+                          subcategory: isometricSubfolder.name,
+                        }));
+
+                      allImages = [...allImages, ...deepSubImages];
+                    }
+                  }
+                }
+              }
+              // isometric 카테고리인 경우 모든 하위 폴더 확인
+              else if (categoryId === 'isometric') {
+                const { data: subData } = await supabase.storage
+                  .from('gallery')
+                  .list(`${storagePath}/${subfolder.name}`, { limit: 1000 });
+
+                if (subData) {
+                  const subImages = subData
+                    .filter(item => item.name.match(/\.(jpg|jpeg|png|avif)$/i))
+                    .map(item => ({
+                      name: item.name,
+                      path: `${storagePath}/${subfolder.name}/${item.name}`,
+                      subcategory: subfolder.name,
+                    }));
+
+                  allImages = [...allImages, ...subImages];
+                }
+              }
+              // proposal의 경우 직접 하위 폴더들 확인
+              else if (categoryId === 'proposal') {
+                const { data: subData } = await supabase.storage
+                  .from('gallery')
+                  .list(`${storagePath}/${subfolder.name}`, { limit: 1000 });
+
+                if (subData) {
+                  const subImages = subData
+                    .filter(item => item.name.match(/\.(jpg|jpeg|png|avif)$/i))
+                    .map(item => ({
+                      name: item.name,
+                      path: `${storagePath}/${subfolder.name}/${item.name}`,
+                      subcategory: subfolder.name,
+                    }));
+
+                  allImages = [...allImages, ...subImages];
+                }
+              }
+              // 다른 카테고리들은 기존 로직 유지
+              else {
+                const { data: subData } = await supabase.storage
+                  .from('gallery')
+                  .list(`${storagePath}/${subfolder.name}`, { limit: 1000 });
+
+                if (subData) {
+                  const subImages = subData
+                    .filter(item => item.name.match(/\.(jpg|jpeg|png|avif)$/i))
+                    .map(item => ({
+                      name: item.name,
+                      path: `${storagePath}/${subfolder.name}/${item.name}`,
+                      subcategory: subfolder.name,
+                    }));
+
+                  allImages = [...allImages, ...subImages];
+                }
+              }
+            }
+          }
+        }
+
+        // 이미지 URL 생성
+        const fileList = await Promise.all(
+          allImages.map(async item => {
+            const { data: urlData } = supabase.storage
+              .from('gallery')
+              .getPublicUrl(item.path);
+            return {
+              src: urlData.publicUrl,
+              alt: item.name,
+              category: categoryId,
+              subcategory: item.subcategory,
+            };
+          }),
+        );
+
+        console.log('Final image list:', fileList);
+        setImages(fileList);
+      } catch (error) {
+        console.error('이미지 로딩 오류: ', error);
+        console.error('Category ID:', categoryId);
+        console.error('Storage Path:', storagePath);
+      }
+
+      setLoading(false);
+    };
+
+    fetchImages();
+  }, [categoryId]);
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation Dropdowns */}
-      {/* <div className="bg-white border-b border-gray-200">
-        <div className="mx-auto px-5 sm:px-8 md:px-16 lg:px-32 xl:px-60 py-4">
-          <div className="flex items-center space-x-8 overflow-x-auto">
-            {Object.entries(categories).map(([key, category]) => (
-              <div key={key} className="relative">
-                <button
-                  onClick={() => toggleDropdown(key)}
-                  className="flex items-center space-x-1 text-[#465A6E] hover:text-gray-800 transition-colors whitespace-nowrap py-2"
-                  aria-expanded={activeDropdown === key}
-                  aria-haspopup="true">
-                  <span className="font-medium">{category.label}</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      activeDropdown === key ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button> */}
-
-      {/* Dropdown Menu */}
-      {/* {activeDropdown === key && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-20">
-                    <div className="py-1">
-                      {category.subcategories.map((subcategory, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleCategorySelect(key)}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                          {subcategory}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+      {/* Category Header */}
+      <div>
+        <div className="mx-auto px-5 sm:px-8 md:px-16 lg:px-32 xl:px-60 py-4 md:py-8">
+          <h1 className="text-xl md:text-3xl font-bold text-[#465A6E]">
+            {currentCategory}
+          </h1>
+          <p className="mt-2 text-sm md:text-base text-gray-600">
+            총 {images.length}개의 이미지
+          </p>
         </div>
-      </div> */}
+      </div>
 
       {/* Gallery Grid */}
-      <main className="mx-auto px-5 sm:px-8 md:px-16 lg:px-32 xl:px-60 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredImages.map(image => (
-            // <div
-            //   key={image.id}
-            //   className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
-            //   <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-            //     <span className="text-gray-600 text-sm font-medium">
-            //       {image.alt}
-            //     </span>
-            //   </div>
-            //   {/* Hover overlay */}
-            //   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
-            // </div>
-            <ImageCard
-              key={image.id}
-              title={image.alt}
-              // subtitle={image.category}
-              imageSrc={image.src}
-              imageAlt={image.alt}
-            />
-          ))}
-        </div>
-
-        {/* Load More Button */}
-        {/* <div className="flex justify-center mt-12">
-          <button className="px-8 py-3 bg-[#F2F4F6] text-[#4E5968] font-medium rounded-md hover:bg-[#E5E7EB] transition-colors">
-            더보기
-          </button>
-        </div> */}
+      <main className="mx-auto px-5 sm:px-8 md:px-16 lg:px-32 xl:px-60">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-lg text-gray-600">이미지 불러오는 중...</div>
+          </div>
+        ) : images.length === 0 ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-lg text-gray-600">이미지가 없습니다.</div>
+          </div>
+        ) : (
+          <div className=" border-t border-gray-200 pt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {images.map((image, idx) => (
+              <ImageCard
+                key={idx}
+                title={image.alt}
+                imageSrc={image.src}
+                imageAlt={image.alt}
+              />
+            ))}
+          </div>
+        )}
       </main>
-
-      {/* Click outside handler */}
-      {activeDropdown && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setActiveDropdown(null)}
-          aria-hidden="true"
-        />
-      )}
     </div>
   );
 };
