@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.77.0",
-    "@tanstack/react-query": "5.87.4",
+    "@tanstack/react-query": "5.90.2",
     "axios": "^1.11.0",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
@@ -20,7 +20,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@tanstack/react-query-devtools": "^5.87.4",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -31,6 +31,6 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": ">=20"
+    "node": "20"
   }
 }
