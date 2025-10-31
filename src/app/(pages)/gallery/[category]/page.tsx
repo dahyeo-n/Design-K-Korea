@@ -4,6 +4,7 @@ import { useState, useEffect, type JSX } from 'react';
 import { useParams } from 'next/navigation';
 
 import ImageCard from '@/components/ImageCard';
+import Lightbox from '@/components/Lightbox';
 import { supabase } from '@/lib/supabaseClient';
 
 const categoryNames: Record<string, string> = {
@@ -90,6 +91,10 @@ const GalleryCategory = (): JSX.Element => {
   >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentCategory, setCurrentCategory] = useState<string>('');
+
+  // Lightbox 상태 관리
+  const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -265,6 +270,24 @@ const GalleryCategory = (): JSX.Element => {
     fetchImages();
   }, [categoryId]);
 
+  // Lightbox 제어 함수들
+  const openLightbox = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex(prev => (prev < images.length - 1 ? prev + 1 : prev));
+  };
+
+  const previousImage = () => {
+    setCurrentImageIndex(prev => (prev > 0 ? prev - 1 : prev));
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Category Header */}
@@ -297,11 +320,22 @@ const GalleryCategory = (): JSX.Element => {
                 title={image.alt}
                 imageSrc={image.src}
                 imageAlt={image.alt}
+                onClick={() => openLightbox(idx)}
               />
             ))}
           </div>
         )}
       </main>
+
+      {/* Lightbox */}
+      <Lightbox
+        images={images}
+        currentIndex={currentImageIndex}
+        isOpen={isLightboxOpen}
+        onClose={closeLightbox}
+        onNext={nextImage}
+        onPrevious={previousImage}
+      />
     </div>
   );
 };

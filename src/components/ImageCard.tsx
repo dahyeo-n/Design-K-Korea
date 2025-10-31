@@ -12,21 +12,24 @@ type ImageCardProps = {
   gradientFrom?: string;
   gradientTo?: string;
   lookCloser?: boolean;
+  onClick?: () => void;
 };
 
 const ImageCard = ({
   title,
   subtitle,
-  description,
   imageSrc,
   imageAlt,
   icon,
   gradientFrom,
   gradientTo,
   lookCloser,
+  onClick,
 }: ImageCardProps) => {
   return (
-    <div className="group relative overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+    <div
+      className="group relative overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 cursor-pointer"
+      onClick={onClick}>
       {subtitle && (
         <div
           className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-full bg-gradient-to-r ${gradientFrom} ${gradientTo} text-white text-sm font-medium shadow-md`}>
