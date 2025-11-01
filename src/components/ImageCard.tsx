@@ -57,10 +57,10 @@ const ImageCard = ({
           <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
             {title}
           </h3>
-          <div className="flex items-center text-blue-600 font-medium transition-transform duration-200">
+          <button className="flex items-center text-blue-600 font-medium transition-transform duration-200">
             자세히 보기
             <ArrowRight className="w-4 h-4 ml-2" />
-          </div>
+          </button>
         </div>
       )}
     </div>

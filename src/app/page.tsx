@@ -3,14 +3,18 @@
 import { type JSX } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CircleArrowDown, Home, Building2, Palette } from 'lucide-react';
 
 import ImageCard from '@/components/ImageCard';
 
 const Main = (): JSX.Element => {
+  const router = useRouter();
+
   const spaces = [
     {
       title: '주거 공간',
+      href: '/gallery/residence',
       subtitle: 'The First Space',
       imageSrc: '/residence.avif',
       imageAlt: '현대적인 주택의 외관, 저녁 시간 조명이 켜진 모습',
@@ -20,6 +24,7 @@ const Main = (): JSX.Element => {
     },
     {
       title: '비즈니스 공간',
+      href: '/gallery/office',
       subtitle: 'The Second Space',
       imageSrc: '/office.avif',
       imageAlt: '현대적인 고층 빌딩들의 상향 앵글 뷰',
@@ -29,6 +34,7 @@ const Main = (): JSX.Element => {
     },
     {
       title: '여가/문화 공간',
+      href: '/gallery/exhibition',
       subtitle: 'The Third Space',
       imageSrc: '/exhibition.avif',
       imageAlt: '미술관에서 예술 작품을 감상하는 사람의 실루엣',
@@ -154,7 +160,13 @@ const Main = (): JSX.Element => {
                     animationDelay: `${index * 150}ms`,
                     animation: 'fadeInUp 0.8s ease-out forwards',
                   }}>
-                  <ImageCard {...space} lookCloser />
+                  <ImageCard
+                    {...space}
+                    lookCloser
+                    onClick={() => {
+                      router.push(space.href);
+                    }}
+                  />
                 </div>
               ))}
             </div>

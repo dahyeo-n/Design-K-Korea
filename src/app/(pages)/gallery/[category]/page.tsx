@@ -313,7 +313,7 @@ const GalleryCategory = (): JSX.Element => {
             <div className="text-lg text-gray-600">이미지가 없습니다.</div>
           </div>
         ) : (
-          <div className=" border-t border-gray-200 pt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className=" border-t border-gray-200 pt-4 md:pt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {images.map((image, idx) => (
               <ImageCard
                 key={idx}
