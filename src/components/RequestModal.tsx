@@ -3,6 +3,8 @@
 import { useState, type JSX } from 'react';
 import { X } from 'lucide-react';
 
+import { supabase } from '@/lib/supabaseClient';
+
 type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +22,10 @@ const RequestModal = ({
     title: '',
     attachedFile: null as File | null,
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -39,16 +45,155 @@ const RequestModal = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    // 이름 검증
+    if (!formData.name.trim()) {
+      setError('이름을 입력해 주세요.');
+      return false;
+    }
+    if (formData.name.trim().length < 2) {
+      setError('이름은 2글자 이상이어야 합니다.');
+      return false;
+    }
+
+    // 전화번호 검증
+    const phoneRegex = /^01[0-9]{8,9}$/;
+    if (!formData.phone.trim()) {
+      setError('전화번호를 입력해 주세요.');
+      return false;
+    }
+    if (!phoneRegex.test(formData.phone.replace(/-/g, ''))) {
+      setError('올바른 전화번호 형식이 아닙니다. (예: 01012345678)');
+      return false;
+    }
+
+    // 이메일 검증 (선택사항이지만 입력된 경우)
+    if (formData.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setError('올바른 이메일 형식이 아닙니다.');
+        return false;
+      }
+    }
+
+    // 제휴 내용 검증
+    if (!formData.title.trim()) {
+      setError('제휴 내용을 입력해 주세요.');
+      return false;
+    }
+    if (formData.title.trim().length < 5) {
+      setError('제휴 내용은 5글자 이상 입력해 주세요.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // API 호출 로직 추후 구현
-    console.log('Form submitted: ', formData);
+    setError(null);
+    setSuccess(false);
+
+    // 유효성 검사
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      let fileUrl = null;
+
+      // 파일이 있는 경우 Supabase Storage에 업로드
+      if (formData.attachedFile) {
+        const fileExt = formData.attachedFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `requests/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('request-files')
+          .upload(filePath, formData.attachedFile);
+
+        if (uploadError) {
+          console.error('파일 업로드 오류:', uploadError);
+          // 파일 업로드 실패해도 의뢰는 진행
+        } else {
+          fileUrl = filePath;
+        }
+      }
+
+      // Supabase 테이블 구조에 맞춰 데이터 매핑
+      const insertData = {
+        name: formData.name.trim(),
+        phone_number: formData.phone.replace(/-/g, '').trim(),
+        contents: formData.title.trim(),
+        office_name: formData.company.trim() || null,
+        email: formData.email.trim() || null,
+        file: fileUrl,
+      };
+
+      console.log('삽입할 데이터: ', insertData);
+
+      const { data, error: supabaseError } = await supabase
+        .from('request')
+        .insert([insertData])
+        .select();
+
+      console.log('Supabase 응답: ', { data, error: supabaseError });
+
+      if (supabaseError) {
+        console.error('Supabase 에러 상세: ', {
+          message: supabaseError.message,
+          details: supabaseError.details,
+          hint: supabaseError.hint,
+          code: supabaseError.code,
+        });
+        throw supabaseError;
+      }
+
+      // 성공 처리
+      setSuccess(true);
+      // 폼 리셋
+      setFormData({
+        name: '',
+        phone: '',
+        company: '',
+        email: '',
+        title: '',
+        attachedFile: null,
+      });
+
+      // 2초 후 모달 닫기
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+    } catch (err) {
+      console.error('의뢰서 제출 오류: ', err);
+      setError('의뢰서 제출에 실패했습니다. 다시 시도해 주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      handleClose();
     }
+  };
+
+  const handleClose = () => {
+    // 상태 리셋
+    setError(null);
+    setSuccess(false);
+    setFormData({
+      name: '',
+      phone: '',
+      company: '',
+      email: '',
+      title: '',
+      attachedFile: null,
+    });
+    onClose();
   };
 
   return (
@@ -67,7 +212,7 @@ const RequestModal = ({
             의뢰서 작성하기
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors p-1"
             aria-label="modal close button">
             <X className="w-6 h-6 cursor-pointer" />
@@ -109,6 +254,9 @@ const RequestModal = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-transparent"
                 placeholder="전화번호를 입력해 주세요."
               />
+              <p className="mt-2 text-xs md:text-sm text-gray-500">
+                특수문자 없이 숫자만 입력해 주세요. 예&#41; 01012345678
+              </p>
             </div>
 
             <div>
@@ -170,16 +318,33 @@ const RequestModal = ({
                 placeholder="파일 첨부"
               />
               <p className="mt-2 text-xs md:text-sm text-gray-500">
-                참고 가능한 자료가 있다면 이곳에 첨부해주세요.
+                참고 가능한 자료가 있다면 이곳에 첨부해 주세요.
               </p>
             </div>
           </div>
 
+          {/* 에러 메시지 */}
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* 성공 메시지 */}
+          {success && (
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-green-600 text-sm">
+                의뢰서가 성공적으로 제출되었습니다!
+              </p>
+            </div>
+          )}
+
           <div className="mt-8">
             <button
               type="submit"
-              className="w-full bg-[#808b75] hover:bg-[#5A6351] text-white font-medium py-3 px-4 rounded-md transition-colors cursor-pointer">
-              의뢰하기
+              disabled={isLoading}
+              className="w-full bg-[#808b75] hover:bg-[#5A6351] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-md transition-colors cursor-pointer">
+              {isLoading ? '제출 중...' : '의뢰하기'}
             </button>
           </div>
         </form>
