@@ -39,7 +39,7 @@ const QNADetail = () => {
     const fetchQuestionData = async () => {
       try {
         const { data, error } = await supabase
-          .from('q&a')
+          .from('qna')
           .select('*')
           .eq('id', qnaid)
           .single();
@@ -287,8 +287,13 @@ const QNADetail = () => {
             <div className="flex gap-3 justify-end">
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-300 text-white font-bold rounded-lg hover:bg-blue-500
-                  transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                disabled={!nickname.trim() || !newComment.trim()}
+                className={`px-6 py-2 font-bold rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400
+                  ${
+                    nickname.trim() && newComment.trim()
+                      ? 'bg-blue-400 text-white hover:bg-blue-500 cursor-pointer'
+                      : 'bg-blue-100 text-white cursor-not-allowed'
+                  }`}>
                 댓글 등록
               </button>
             </div>
