@@ -72,7 +72,7 @@ const Main = (): JSX.Element => {
             <button
               className="px-4 sm:px-5 py-2 rounded-lg bg-opacity-0 border border-white
           text-white font-semibold hover:bg-white hover:text-black transition-colors text-sm sm:text-base md:text-lg">
-              포트폴리오 보러 가기
+              <Link href="/gallery/office">포트폴리오 보러 가기</Link>
             </button>
           </div>
 
