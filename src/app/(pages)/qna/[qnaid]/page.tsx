@@ -1,75 +1,154 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
 import Badge from '@/components/qna/Badge';
+import { supabase } from '@/lib/supabaseClient';
 
-const questionData = {
-  status: '답변대기' as const,
-  title: '인테리어 견적 문의',
-  author: '페이커',
-  date: '2025.08.15',
-  content: `안녕하세요.
-혹시 견적이 어느 정도 될지 알 수 있을까요?
-
-200평 정도 되고 단독주택입니다. 첨부한 사진 참고해서 대략적으로 알려주시면 감사하겠습니다. 첨부한 사진처럼 인테리어 됐으면 좋겠습니다.`,
-  images: [
-    {
-      id: 1,
-      src: '/office.avif',
-      alt: '인테리어 참고 이미지 1',
-    },
-    {
-      id: 2,
-      src: '/exhibition.avif',
-      alt: '인테리어 참고 이미지 2',
-    },
-  ],
+type QuestionData = {
+  id: number;
+  status: '공지사항' | '답변대기' | '답변완료';
+  title: string;
+  name: string;
+  contents: string;
+  created_at: string;
+  file?: string;
 };
 
-const commentsData = [
-  {
-    id: 1,
-    author: '김애매',
-    content: '페이커 형 집처럼 꾸미려면 돈 진짜 엄청 들 텐데.. 부자인가 보다',
-    date: '2025.08.15',
-    isOwner: false,
-  },
-  {
-    id: 2,
-    author: '페이커',
-    content: '부자까진 아닙니다..',
-    date: '2025.08.15',
-    isOwner: true,
-  },
-];
+type Comment = {
+  id: number;
+  nickname: string;
+  contents: string;
+  created_at: string;
+  qna_id: number;
+};
 
 const QNADetail = () => {
-  const [newComment, setNewComment] = useState('');
-  const [comments, setComments] = useState(commentsData);
+  const params = useParams();
+  const qnaid = params.qnaid as string;
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      const comment = {
-        id: comments.length + 1,
-        author: '익명',
-        content: newComment.trim(),
-        date: new Date()
-          .toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-          })
-          .replace(/\. /g, '.')
-          .replace('.', ''),
-        isOwner: false,
-      };
-      setComments([...comments, comment]);
-      setNewComment('');
+  const [questionData, setQuestionData] = useState<QuestionData | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuestionData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('q&a')
+          .select('*')
+          .eq('id', qnaid)
+          .single();
+
+        if (error) throw error;
+
+        setQuestionData(data);
+      } catch (error) {
+        console.error('Error fetching question:', error);
+      }
+    };
+
+    const fetchComments = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('comments')
+          .select('*')
+          .eq('qna_id', qnaid)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        setComments(data || []);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    };
+
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchQuestionData(), fetchComments()]);
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, [qnaid]);
+
+  const fetchComments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('qna_id', qnaid)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      setComments(data || []);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
     }
   };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date
+      .toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      })
+      .replace(/\. /g, '.')
+      .replace(/\.$/, '');
+  };
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newComment.trim() && nickname.trim()) {
+      try {
+        const { error } = await supabase.from('comments').insert([
+          {
+            qna_id: parseInt(qnaid),
+            nickname: nickname.trim(),
+            contents: newComment.trim(),
+          },
+        ]);
+
+        if (error) throw error;
+
+        alert('댓글이 등록되었습니다!');
+        setNewComment('');
+        setNickname('');
+        fetchComments();
+      } catch (error) {
+        console.error('Error submitting comment:', error);
+        alert('댓글 등록에 실패했습니다. 다시 시도해주세요.');
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!questionData) {
+    return (
+      <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">질문을 찾을 수 없습니다.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -91,9 +170,9 @@ const QNADetail = () => {
             </h1>
             <div className="flex items-center justify-center gap-4 text-base md:text-lg font-medium">
               <Badge status={questionData.status} />
-              <span>{questionData.author}</span>
+              <span>{questionData.name}</span>
               <span> | </span>
-              <span>{questionData.date}</span>
+              <span>{formatDate(questionData.created_at)}</span>
             </div>
           </div>
         </div>
@@ -104,34 +183,24 @@ const QNADetail = () => {
         <div className="px-2 lg:px-8 mb-8">
           <div className="mb-6">
             <p className="text-gray-700 leading-relaxed whitespace-pre-line text-base lg:text-lg">
-              {questionData.content}
+              {questionData.contents}
             </p>
           </div>
 
-          {/* 첨부 이미지 */}
-          {questionData.images.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {questionData.images.map(image => (
-                <div
-                  key={image.id}
-                  className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    FAKER
-                  </div>
-                  {/* <div className="flex items-center justify-center h-full text-gray-400">
-                    이미지 {image.id}
-                  </div> */}
+          {/* 첨부 파일 */}
+          {questionData.file && (
+            <div className="mb-6">
+              {/\.(jpg|jpeg|png|gif|webp|avif)$/i.test(questionData.file) && (
+                <div className="relative max-w-2xl">
                   <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    className="object-cover"
+                    src={questionData.file}
+                    alt="첨부 이미지"
+                    width={800}
+                    height={600}
+                    className="rounded-lg shadow-md object-contain"
                   />
-                  {/* <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {image.id === 1 ? '무번 수 있는 곳' : '과장으로'}
-                  </div> */}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
@@ -144,28 +213,34 @@ const QNADetail = () => {
 
           {/* 기존 댓글 */}
           <div className="space-y-6 mb-8">
-            {comments.map(comment => (
-              <div
-                key={comment.id}
-                className="border-b border-gray-100 pb-6 last:border-b-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium text-gray-800">
-                    {comment.author}
-                  </span>
-                  {comment.isOwner && (
-                    <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
-                      작성자
+            {comments.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">
+                아직 댓글이 없습니다.
+              </p>
+            ) : (
+              comments.map(comment => (
+                <div
+                  key={comment.id}
+                  className="border-b border-gray-100 pb-6 last:border-b-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-medium text-gray-800">
+                      {comment.nickname}
                     </span>
-                  )}
-                  <span className="text-sm text-gray-500 ml-2">
-                    {comment.date}
-                  </span>
+                    {comment.nickname === questionData?.name && (
+                      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                        작성자
+                      </span>
+                    )}
+                    <span className="text-sm text-gray-500 ml-2">
+                      {formatDate(comment.created_at)}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">
+                    {comment.contents}
+                  </p>
                 </div>
-                <p className="text-gray-700 leading-relaxed">
-                  {comment.content}
-                </p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* 댓글 작성 폼 */}
@@ -174,17 +249,21 @@ const QNADetail = () => {
             className="space-y-4 text-sm md:text-base">
             <div className="flex items-center gap-2 mb-3">
               <label
-                htmlFor="comment"
+                htmlFor="nickname"
                 className="text-base md:text-lg font-medium text-gray-700">
                 닉네임
               </label>
               <span className="text-base md:text-lg text-red-500">*</span>
               <input
+                id="nickname"
                 type="text"
+                value={nickname}
+                onChange={e => setNickname(e.target.value)}
                 placeholder="1자 이상 12자 이하"
                 className="w-80 border border-gray-300 rounded-lg px-4 py-2 ml-3
                 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent
                 transition-all duration-200"
+                minLength={1}
                 maxLength={12}
                 required
               />

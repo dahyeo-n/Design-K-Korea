@@ -1,52 +1,66 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 import Badge from '@/components/qna/Badge';
 import Pagination from '@/components/qna/Pagination';
 import QnaFormModal from '@/components/qna/QnaFormModal';
+import { supabase } from '@/lib/supabaseClient';
 
 type QnaItem = {
   id: number;
   status: '공지사항' | '답변대기' | '답변완료';
   title: string;
-  content: string;
-  author: string;
-  date: string;
+  contents: string;
+  name: string;
+  created_at: string;
 };
-
-const dummyData: QnaItem[] = [
-  {
-    id: 1,
-    status: '공지사항',
-    title: '디자인케이코리아 Q&A 게시판 이용 안내',
-    content:
-      '안녕하세요, 디자인케이코리아 홈페이지 관리자입니다. 홈페이지 이용 중 궁금한 점이 있으시거나 요청사항이 있으실 경우, Q&A 우측 상단에 위치한 글쓰...',
-    author: 'DESIGNK',
-    date: '2025.08.01',
-  },
-  {
-    id: 2,
-    status: '답변대기',
-    title: '인테리어 견적 문의',
-    content:
-      '안녕하세요. 혹시 견적이 어느 정도 될지 알 수 있을까요? 100평 정도 되고 아파트입니다.  첨부한 사진 참고해서 대략적으로 알려주시면 감사하겠...',
-    author: '이상혁',
-    date: '2025.08.15',
-  },
-  {
-    id: 3,
-    status: '답변완료',
-    title: '이런 장소도 인테리어 가능할까요?',
-    content: '답변이 등록되었습니다. 답변을 확인해 주세요.',
-    author: '김애매',
-    date: '2025.08.08',
-  },
-];
 
 const QNAMain = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [qnaList, setQnaList] = useState<QnaItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  const fetchQnaList = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('q&a')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setQnaList(data || []);
+    } catch (error) {
+      console.error('Error fetching QnA list:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQnaList();
+  }, []);
+
+  const handleRowClick = (id: number) => {
+    router.push(`/qna/${id}`);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date
+      .toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      })
+      .replace(/\. /g, '.')
+      .replace(/\.$/, '');
+  };
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -80,7 +94,7 @@ const QNAMain = () => {
 
         {/* 표 */}
         <p className="text-sm text-[#808080] mb-4">
-          Total {dummyData.length} / 1 page
+          Total {qnaList.length} / 1 page
         </p>
 
         <div className="overflow-x-auto bg-white">
@@ -95,25 +109,44 @@ const QNAMain = () => {
             </thead>
 
             <tbody>
-              {dummyData.map(item => (
-                <tr
-                  key={item.id}
-                  className="border-t text-[#808080] hover:bg-gray-50 transition">
-                  <td className="text-center">
-                    <Badge status={item.status} />
+              {isLoading ? (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-gray-500">
+                    로딩 중...
                   </td>
-                  <td className="px-4 py-3 space-y-1">
-                    <p className="font-semibold text-[#212529]">{item.title}</p>
-                    <p className="text-sm truncate max-w-xs md:max-w-lg">
-                      {item.content}
-                    </p>
-                  </td>
-                  <td className="text-sm text-center font-medium">
-                    {item.author}
-                  </td>
-                  <td className="text-sm text-center">{item.date}</td>
                 </tr>
-              ))}
+              ) : qnaList.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="text-center py-8 text-gray-500">
+                    등록된 질문이 없습니다.
+                  </td>
+                </tr>
+              ) : (
+                qnaList.map(item => (
+                  <tr
+                    key={item.id}
+                    onClick={() => handleRowClick(item.id)}
+                    className="border-t text-[#808080] hover:bg-gray-50 transition cursor-pointer">
+                    <td className="text-center">
+                      <Badge status={item.status} />
+                    </td>
+                    <td className="px-4 py-3 space-y-1">
+                      <p className="font-semibold text-[#212529]">
+                        {item.title}
+                      </p>
+                      <p className="text-sm truncate max-w-xs md:max-w-lg">
+                        {item.contents}
+                      </p>
+                    </td>
+                    <td className="text-sm text-center font-medium">
+                      {item.name}
+                    </td>
+                    <td className="text-sm text-center">
+                      {formatDate(item.created_at)}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -125,7 +158,12 @@ const QNAMain = () => {
       </section>
 
       {/* Modal */}
-      {isModalOpen && <QnaFormModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <QnaFormModal
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={fetchQnaList}
+        />
+      )}
     </main>
   );
 };
