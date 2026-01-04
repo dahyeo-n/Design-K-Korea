@@ -45,9 +45,9 @@ const Main = (): JSX.Element => {
   ];
 
   return (
-    <div>
-      <div className="h-screen overflow-y-scroll snap-y snap-mandatory">
-        <section className="relative w-full min-h-[calc(100vh-56px)] snap-start flex items-center justify-start px-6 md:px-20 lg:px-60">
+    <div className="snap-y snap-mandatory">
+      <div>
+        <section className="relative w-full min-h-screen snap-start flex items-center justify-start px-6 md:px-20 lg:px-60">
           <Image
             src="/main-cover.png"
             alt="main cover"
@@ -82,7 +82,7 @@ const Main = (): JSX.Element => {
           </div>
         </section>
 
-        <section className="relative w-full min-h-[calc(100vh-56px)] snap-start flex flex-col justify-center items-center px-6 md:px-20 bg-white">
+        <section className="relative w-full min-h-screen snap-start flex flex-col justify-center items-center px-6 md:px-20 bg-white">
           <div
             className="text-center mb-10 space-y-1 md:space-y-3 md:pb-8
             text-2xl md:text-4xl font-bold text-gray-900">
@@ -127,7 +127,7 @@ const Main = (): JSX.Element => {
           </div>
         </section>
 
-        <section className="min-h-[calc(100vh-56px)] snap-start bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 sm:py-16 lg:py-20 flex items-center">
+        <section className="min-h-screen snap-start bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 sm:py-16 lg:py-20 flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Header Section */}
             <header className="text-center mb-12 sm:mb-16">
