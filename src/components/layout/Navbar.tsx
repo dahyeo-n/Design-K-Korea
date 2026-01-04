@@ -295,21 +295,21 @@ const Navbar = (): JSX.Element => {
 
         {/* Desktop Request Button */}
         <div className="hidden md:flex">
-          <button
+          {/* <button
             onClick={() => setIsModalOpen(true)}
             className="text-[#4E5968] text-sm lg:text-base font-bold bg-[#F2F4F6] px-3 md:px-4 py-2 rounded-md hover:text-gray-800 hover:bg-[#E5E7EB] transition-colors">
             의뢰하기
-          </button>
+          </button> */}
         </div>
 
         {/* Mobile Navigation */}
         <div className="md:hidden flex items-center space-x-3">
           {/* Mobile Request Button */}
-          <button
+          {/* <button
             onClick={() => setIsModalOpen(true)}
             className="text-[#4E5968] text-xs font-bold bg-[#F2F4F6] px-2 py-1.5 rounded-md hover:text-gray-800 hover:bg-[#E5E7EB] transition-colors">
             의뢰하기
-          </button>
+          </button> */}
 
           {/* Hamburger Menu Button */}
           <button
@@ -484,7 +484,7 @@ const Navbar = (): JSX.Element => {
             </div>
 
             {/* Mobile Menu Request Button */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
+            {/* <div className="mt-8 pt-6 border-t border-gray-200">
               <button
                 onClick={() => {
                   setIsModalOpen(true);
@@ -493,7 +493,7 @@ const Navbar = (): JSX.Element => {
                 className="w-full text-white text-sm font-bold bg-[#465A6E] py-3 px-4 rounded-md hover:bg-[#3a4a5c] transition-colors">
                 의뢰하기
               </button>
-            </div>
+            </div> */}
           </nav>
         </div>
       </div>
