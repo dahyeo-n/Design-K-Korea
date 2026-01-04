@@ -19,7 +19,7 @@ const About = () => {
       title: '통찰력',
       subtitle: 'Insight',
       description:
-        '단순한 유행이 아닌, 고객의 라이프스타일과 공간의 본질을 이해하고 공간에 맞는 본질적인 해답을 제시합니다.',
+        '단순 유행이 아닌, 고객의 라이프스타일과 공간의 본질을 이해하고 공간에 맞는 본질적인 해답을 제시합니다.',
       imageSrc: '/insight.jpg',
       imageAlt: '망원경을 들여다보는 장면',
       gradientFrom: 'from-blue-500',
