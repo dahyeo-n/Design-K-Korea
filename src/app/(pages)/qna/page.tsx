@@ -24,17 +24,31 @@ const QNAMain = () => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // status 정렬 우선순위: 공지사항(1) > 답변완료(2) > 답변대기(3)
+  const getStatusOrder = (status: string) => {
+    if (status === '공지사항') return 1;
+    if (status === '답변완료') return 2;
+    if (status === '답변대기') return 3;
+    return 4;
+  };
+
   const fetchQnaList = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('q&a')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('qna').select('*');
 
       if (error) throw error;
 
-      setQnaList(data || []);
+      // status 순서로 정렬, 같은 status 내에서는 최신순
+      const sortedData = [...(data || [])].sort((a, b) => {
+        const statusDiff = getStatusOrder(a.status) - getStatusOrder(b.status);
+        if (statusDiff !== 0) return statusDiff;
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      });
+
+      setQnaList(sortedData);
     } catch (error) {
       console.error('Error fetching QnA list:', error);
     } finally {

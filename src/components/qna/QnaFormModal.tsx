@@ -63,7 +63,7 @@ const QnaFormModal = ({ onClose, onSuccess }: QnaFormModalProps) => {
         fileUrl = await uploadFile(file);
       }
 
-      const { data, error } = await supabase.from('q&a').insert([
+      const { data, error } = await supabase.from('qna').insert([
         {
           name: formData.name,
           title: formData.title,
